@@ -14,7 +14,7 @@ def load_data(path):
     return df
 
 # import data
-df_raw = load_data(path = "data/share-of-individuals-using-the-internet.csv")
+df_raw = load_data(path = "share-of-individuals-using-the-internet.csv")
 df = deepcopy(df_raw)
 df = df.rename(columns={"Individuals using the Internet (% of population)" : "Percentage"})
 
@@ -23,7 +23,7 @@ df = df.rename(columns={"Individuals using the Internet (% of population)" : "Pe
 def load_geojson(path):
     with open(path, 'r') as f:
         return json.load(f)
-geojson = load_geojson("data/countries.geojson")
+geojson = load_geojson("countries.geojson")
 
 # select rows with valid geodata and sort it
 ent_values = list(df["Code"].unique())
@@ -94,4 +94,5 @@ with tab2:
 # show dataframe
 if st.checkbox("Show Dataframe"):
     st.write("This is the dataset:")
+
     st.dataframe(data=df)
