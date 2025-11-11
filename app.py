@@ -37,14 +37,31 @@ sorted_df = valid_codes_df.sort_values(["Year", "Code"]).reset_index(drop=True)
 msg_placeholder = st.empty()
 # Show a message
 msg_placeholder.success("Did you know that Streamlit reloads every time you play with a widget? Yes, even when you cache. Just give it a second... and stay zen! 😇 ")
-# Wait for 3 seconds
+# Wait for 10 seconds
 time.sleep(10)
 # Clear the message
 msg_placeholder.empty()
 
-tab1, tab2 = st.tabs(["World", "Countries"])
+tab1, tab2 = st.tabs(["Countries", "World"])
 
-with tab1:
+with tab1:    
+    st.write("Here you can see each country's internet usage over time")
+    # cache the dictionary with figures for each country
+    @st.cache_resource
+    def generate_figures():
+        country_charts = {}
+        for country in sorted_df["Entity"].unique():
+            country_df = sorted_df[sorted_df["Entity"] == country]
+            fig = px.line(country_df, x= "Year", y="Percentage")
+            fig.update_yaxes(range=[0, 100])
+            country_charts[country] = fig
+        return country_charts
+    figs = generate_figures()
+    selected_country = st.selectbox('Select a country to see its internet usage over time', sorted(figs.keys()))
+    with st.spinner(text='Loading country data...'):
+        st.plotly_chart(figs[selected_country], use_container_width=True)
+
+with tab2:
     st.write("Here you can see an animated world map of internet usage over time")
     # cache the animated map
     @st.cache_resource
@@ -74,25 +91,11 @@ with tab1:
             st.session_state["fig"] = make_animated_map(sorted_df, geojson)
     st.plotly_chart(st.session_state["fig"])
 
-with tab2:    
-    st.write("Here you can see each country's internet usage over time")
-    # cache the dictionary with figures for each country
-    @st.cache_resource
-    def generate_figures():
-        country_charts = {}
-        for country in sorted_df["Entity"].unique():
-            country_df = sorted_df[sorted_df["Entity"] == country]
-            fig = px.line(country_df, x= "Year", y="Percentage")
-            fig.update_yaxes(range=[0, 100])
-            country_charts[country] = fig
-        return country_charts
-    figs = generate_figures()
-    selected_country = st.selectbox('Select a country to see its internet usage over time', sorted(figs.keys()))
-    with st.spinner(text='Loading country data...'):
-        st.plotly_chart(figs[selected_country], use_container_width=True)
+
 
 # show dataframe
 if st.checkbox("Show Dataframe"):
     st.write("This is the dataset:")
 
     st.dataframe(data=df)
+
